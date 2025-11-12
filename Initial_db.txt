@@ -1,0 +1,65 @@
+USE Test4SB;
+
+DROP TABLE IF EXISTS accounts;
+DROP TABLE IF EXISTS account_types;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(64) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('USER','ADMIN') NOT NULL,
+  full_name VARCHAR(120) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE account_types (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(32) NOT NULL UNIQUE,
+  description VARCHAR(120) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE accounts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  owner_name VARCHAR(120) NOT NULL,
+  number BIGINT NOT NULL,
+  balance DECIMAL(15,2) NOT NULL,
+  interest DECIMAL(6,3) NOT NULL,
+  type_id INT NOT NULL,
+  overdraft_limit DECIMAL(15,2) NULL,
+  overdraft_interest DECIMAL(6,3) NULL,
+  CONSTRAINT fk_accounts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_accounts_type FOREIGN KEY (type_id) REFERENCES account_types(id),
+  UNIQUE KEY uk_account_number (number)
+) ENGINE=InnoDB;
+
+INSERT INTO account_types (code, description) VALUES
+  ('STANDARD','Bežný účet'),
+  ('OVERDRAFT','Účet s povoleným prečerpaním');
+
+-- Admin (dočasne heslo 'admin' v plain texte)
+INSERT INTO users (username, password_hash, role, full_name)
+VALUES ('admin', 'admin', 'ADMIN', 'Administrator');
+
+-- Bežný user (dočasne heslo 'user')
+INSERT INTO users (username, password_hash, role, full_name)
+VALUES ('user', 'user', 'USER', 'Bežný Používateľ');
+
+INSERT INTO accounts (user_id, owner_name, number, balance, interest, type_id)
+VALUES
+  ((SELECT id FROM users WHERE username='admin'),
+   'Administrator', 1001000001, 2500.00, 1.200,
+   (SELECT id FROM account_types WHERE code='STANDARD'));
+
+INSERT INTO accounts (user_id, owner_name, number, balance, interest, type_id)
+VALUES
+  ((SELECT id FROM users WHERE username='user'),
+   'Bežný Používateľ', 2002000001, 500.00, 0.800,
+   (SELECT id FROM account_types WHERE code='STANDARD'));
+
+INSERT INTO accounts (user_id, owner_name, number, balance, interest, type_id, overdraft_limit, overdraft_interest)
+VALUES
+  ((SELECT id FROM users WHERE username='user'),
+   'Bežný Používateľ', 2002000002, -50.00, 0.800,
+   (SELECT id FROM account_types WHERE code='OVERDRAFT'),
+   300.00, 14.900);

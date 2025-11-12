@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.example.mojabanka_graficky.ui.user.UserDashboardController"
-            prefHeight="400.0" prefWidth="600.0">
 
-</AnchorPane>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.mojabanka_graficky.ui.user.UserDashboardController"
+            prefWidth="900" prefHeight="600">
+    <top><Label text="Moje účty" /></top>
+    <center>
+        <TableView fx:id="accountsTable">
+            <columns>
+                <TableColumn text="Majiteľ" fx:id="colOwner"/>
+                <TableColumn text="Číslo" fx:id="colNumber"/>
+                <TableColumn text="Zostatok" fx:id="colBalance"/>
+                <TableColumn text="Úrok" fx:id="colInterest"/>
+                <TableColumn text="Typ" fx:id="colType"/>
+            </columns>
+        </TableView>
+    </center>
+    <bottom>
+        <HBox spacing="8" style="-fx-padding:10;">
+            <TextField fx:id="amountField" promptText="Suma"/>
+            <Button text="Vklad" onAction="#onDeposit"/>
+            <Button text="Výber" onAction="#onWithdraw"/>
+            <Button text="Zap. úrok" onAction="#onApplyInterest"/>
+            <Label fx:id="statusLabel"/>
+        </HBox>
+    </bottom>
+</BorderPane>

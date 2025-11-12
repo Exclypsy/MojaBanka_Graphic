@@ -1,58 +1,43 @@
-import java.io.BufferedWriter;
-import java.io.IOException;
+package com.example.mojabanka_graficky.model;
 
 public class Ucet {
+    private long id;
     private String majitel;
-    private int cislo;          //vlastnosti triedy
-    double zostatok;
+    private long number;
+    protected double zostatok;
     private double urok;
 
-    public Ucet(String majitel, int cislo, double zostatok, double urok) {
+    public Ucet(long id, String majitel, long number, double zostatok, double urok) {
+        this.id = id;
         this.majitel = majitel;
-        this.cislo = cislo;
+        this.number = number;
         setZostatok(zostatok);
         this.urok = urok;
     }
 
+    public long getId() { return id; }
+    public String getMajitel() { return majitel; }
+    public long getNumber() { return number; }
+    public double getZostatok() { return zostatok; }
+    public double getUrok() { return urok; }
 
     public void setZostatok(double zostatok) {
         if (zostatok < 0) System.out.println("Chybna bankova operacia - zaporny zostatok");
         else this.zostatok = zostatok;
     }
 
-    public void vklad(double suma){
+    public void vklad(double suma) {
         if (suma <= 0) System.out.println("Chybna bankova operacia - zaporna alebo nulova suma vkladu");
         else this.zostatok += suma;
     }
 
-    public void vyber(double suma){
+    public void vyber(double suma) {
         if (suma <= 0) System.out.println("Chybna bankova operacia - zaporna alebo nulova suma vyberu");
         else if (suma > zostatok) System.out.println("Chybna bankova operacia - suma je vacsia ako zostatok");
         else this.zostatok -= suma;
     }
 
-    public void zapocitajUrok(){
-        zostatok += (urok/100) * zostatok/12;
+    public void zapocitajUrok() {
+        zostatok += (urok / 100.0) * zostatok / 12.0;
     }
-
-
-    public double getZostatok() {
-        return zostatok;
-    }
-
-
-    @Override
-    public String toString() {
-        return "Ucet{" +
-                "majitel='" + majitel + '\'' +
-                ", cislo=" + cislo +
-                ", zostatok=" + zostatok +
-                ", urok=" + urok +
-                '}';
-    }
-
-    public void save(BufferedWriter bw) throws IOException {
-        bw.write(toString()+ "\n");
-    }
-
 }

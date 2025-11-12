@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.mojabanka_graficky.ui.login.LoginController"
+            prefWidth="400" prefHeight="240">
+    <children>
+        <Label text="Prihlásenie" layoutX="20" layoutY="20"/>
+        <TextField fx:id="usernameField" promptText="Používateľ" layoutX="20" layoutY="60"/>
+        <PasswordField fx:id="passwordField" promptText="Heslo" layoutX="20" layoutY="100"/>
+        <Button text="Prihlásiť" onAction="#onLogin" layoutX="20" layoutY="140"/>
+        <Label fx:id="errorLabel" textFill="red" layoutX="20" layoutY="180"/>
+    </children>
+</AnchorPane>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.mojabanka_graficky.ui.login.LoginController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
 
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
-</VBox>
+

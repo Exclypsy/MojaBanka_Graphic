@@ -5,19 +5,26 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
 public class HelloApplication extends Application {
+    private static Scene scene;
+
     @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("login-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("Hello!");
+    public void start(Stage stage) throws Exception {
+        scene = new Scene(
+                FXMLLoader.load(HelloApplication.class.getResource("/com/example/mojabanka_graficky/login-view.fxml")),
+                900, 600
+        );
+        stage.setTitle("Moja Banka");
         stage.setScene(scene);
         stage.show();
     }
 
+    public static void setRoot(String name) throws Exception {
+        scene.setRoot(FXMLLoader.load(HelloApplication.class.getResource("/com/example/mojabanka_graficky/" + name + ".fxml")));
+    }
+
+
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
 }

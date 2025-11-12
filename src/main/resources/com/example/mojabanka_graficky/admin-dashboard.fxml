@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
+<BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.mojabanka_graficky.ui.admin.AdminDashboardController"
-            prefHeight="400.0" prefWidth="600.0">
-
-</AnchorPane>
+            prefWidth="1000" prefHeight="600">
+    <top><Label text="Admin - všetky účty" /></top>
+    <center>
+        <TableView fx:id="accountsTable"/>
+    </center>
+    <bottom>
+        <HBox spacing="8" style="-fx-padding:10;">
+            <Button text="Zmazať" onAction="#onDelete"/>
+        </HBox>
+    </bottom>
+</BorderPane>
