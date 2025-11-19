@@ -1,5 +1,5 @@
 package com.example.mojabanka_graficky.model;
-
+//tst
 public class Ucet {
     private long id;
     private String majitel;
