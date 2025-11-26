@@ -4,14 +4,46 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.mojabanka_graficky.ui.admin.AdminDashboardController"
-            prefWidth="1000" prefHeight="600">
-    <top><Label text="Admin - všetky účty" /></top>
+            prefWidth="1000" prefHeight="700">
+
+    <top><Label text="Admin - všetky účty a užívatelia"/></top>
+
     <center>
-        <TableView fx:id="accountsTable"/>
+        <SplitPane dividerPositions="0.5">
+            <!-- Účty -->
+            <TableView fx:id="accountsTable">
+                <columns>
+                    <TableColumn text="Majiteľ" fx:id="colOwner"/>
+                    <TableColumn text="Číslo účtu" fx:id="colNumber"/>
+                    <TableColumn text="Zostatok" fx:id="colBalance"/>
+                    <TableColumn text="Úrok" fx:id="colInterest"/>
+                    <TableColumn text="Typ" fx:id="colType"/>
+                </columns>
+            </TableView>
+            <!-- Užívateľa -->
+            <TableView fx:id="usersTable">
+                <columns>
+                    <TableColumn text="Username" fx:id="colUserUsername"/>
+                    <TableColumn text="Role" fx:id="colUserRole"/>
+                    <TableColumn text="Celé meno" fx:id="colUserFullName"/>
+                </columns>
+            </TableView>
+        </SplitPane>
     </center>
     <bottom>
-        <HBox spacing="8" style="-fx-padding:10;">
-            <Button text="Zmazať" onAction="#onDelete"/>
-        </HBox>
+        <VBox spacing="10" style="-fx-padding:10;">
+            <HBox spacing="8">
+                <Button text="Zmazať účet" onAction="#onDelete"/>
+            </HBox>
+            <Separator/>
+            <HBox spacing="8">
+                <TextField fx:id="userUsernameField" promptText="Nový username"/>
+                <PasswordField fx:id="userPasswordField" promptText="Heslo"/>
+                <TextField fx:id="userFullNameField" promptText="Celé meno"/>
+                <ChoiceBox fx:id="userRoleChoice"/>
+                <Button text="Vytvor používateľa" onAction="#onCreateUser"/>
+                <Label fx:id="userCreateStatus" textFill="red"/>
+            </HBox>
+        </VBox>
     </bottom>
 </BorderPane>
