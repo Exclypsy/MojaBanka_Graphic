@@ -2,29 +2,73 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.mojabanka_graficky.ui.user.UserDashboardController"
             prefWidth="900" prefHeight="600">
-    <top><Label text="Moje účty" /></top>
-    <center>
-        <TableView fx:id="accountsTable">
-            <columns>
-                <TableColumn text="Majiteľ" fx:id="colOwner"/>
-                <TableColumn text="Číslo" fx:id="colNumber"/>
-                <TableColumn text="Zostatok" fx:id="colBalance"/>
-                <TableColumn text="Úrok" fx:id="colInterest"/>
-                <TableColumn text="Typ" fx:id="colType"/>
-            </columns>
-        </TableView>
-    </center>
-    <bottom>
-        <HBox spacing="8" style="-fx-padding:10;">
-            <TextField fx:id="amountField" promptText="Suma"/>
-            <Button text="Vklad" onAction="#onDeposit"/>
-            <Button text="Výber" onAction="#onWithdraw"/>
-            <Button text="Zap. úrok" onAction="#onApplyInterest"/>
-            <Label fx:id="statusLabel"/>
+
+    <!-- HEADER -->
+    <top>
+        <HBox spacing="12" style="-fx-padding:10; -fx-background-color:#f5f5f5;" alignment="CENTER_LEFT">
+            <Label text="Moje účty"
+                   style="-fx-font-size:20px; -fx-font-weight:bold;"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Label fx:id="userLabel" style="-fx-text-fill:#555555;"/>
+            <Button text="Odhlásiť"
+                    onAction="#onLogout"
+                    style="-fx-background-color:#d32f2f; -fx-text-fill:white;"/>
         </HBox>
-    </bottom>
+    </top>
+
+    <!-- CENTER – tabuľka + operácie -->
+    <center>
+        <HBox spacing="10" style="-fx-padding:10;">
+            <!-- Tabuľka účtov -->
+            <VBox HBox.hgrow="ALWAYS" spacing="6">
+                <Label text="Zoznam účtov" style="-fx-font-weight:bold;"/>
+                <TableView fx:id="accountsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn text="Majiteľ" fx:id="colOwner" prefWidth="150"/>
+                        <TableColumn text="Číslo" fx:id="colNumber" prefWidth="150"/>
+                        <TableColumn text="Zostatok" fx:id="colBalance" prefWidth="120"/>
+                        <TableColumn text="Úrok" fx:id="colInterest" prefWidth="80"/>
+                        <TableColumn text="Typ" fx:id="colType" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- Operácie -->
+            <VBox spacing="12" prefWidth="260">
+                <TitledPane text="Operácie s účtom" expanded="true">
+                    <content>
+                        <VBox spacing="8" style="-fx-padding:8;">
+                            <Label text="Vklad / výber:" style="-fx-font-weight:bold;"/>
+                            <TextField fx:id="amountField" promptText="Suma"/>
+                            <HBox spacing="8">
+                                <Button text="Vklad" onAction="#onDeposit" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                                <Button text="Výber" onAction="#onWithdraw" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                            </HBox>
+                            <Button text="Zap. úrok" onAction="#onApplyInterest" maxWidth="Infinity"/>
+                        </VBox>
+                    </content>
+                </TitledPane>
+
+                <TitledPane text="Prevod na iný účet" expanded="true">
+                    <content>
+                        <VBox spacing="8" style="-fx-padding:8;">
+                            <Label text="Cieľové číslo účtu:"/>
+                            <TextField fx:id="transferTargetField" promptText="napr. 2002000001"/>
+                            <Label text="Suma:"/>
+                            <TextField fx:id="transferAmountField" promptText="Suma"/>
+                            <Button text="Odoslať prevod"
+                                    onAction="#onTransfer"
+                                    maxWidth="Infinity"
+                                    style="-fx-background-color:#388E3C; -fx-text-fill:white;"/>
+                        </VBox>
+                    </content>
+                </TitledPane>
+
+                <Label fx:id="statusLabel" textFill="red" wrapText="true"/>
+            </VBox>
+        </HBox>
+    </center>
 </BorderPane>

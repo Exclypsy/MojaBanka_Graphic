@@ -13,7 +13,7 @@ public class HelloApplication extends Application {
     public void start(Stage stage) throws Exception {
         scene = new Scene(
                 FXMLLoader.load(HelloApplication.class.getResource("/com/example/mojabanka_graficky/login-view.fxml")),
-                900, 600
+                1280, 900
         );
         stage.setTitle("Moja Banka");
         stage.setScene(scene);

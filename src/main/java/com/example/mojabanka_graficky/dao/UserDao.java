@@ -26,6 +26,15 @@ public class UserDao {
         }
     }
 
+    public void delete(int id) throws SQLException {
+        try (Connection c = Db.get();
+             PreparedStatement ps = c.prepareStatement(
+                     "DELETE FROM users WHERE id=?")) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
+    }
+
     // Zoznam všetkých používateľov
     public List<User> findAll() throws SQLException {
         String sql = "SELECT id, username, password_hash, role, full_name FROM users";

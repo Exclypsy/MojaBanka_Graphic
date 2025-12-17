@@ -49,6 +49,63 @@ public class AccountDao {
         }
     }
 
+    public Ucet findByNumber(long number) throws SQLException {
+        String sql = "SELECT * FROM accounts WHERE number = ?";
+        try (Connection c = Db.get();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setLong(1, number);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    long id        = rs.getLong("id");
+                    String majitel = rs.getString("majitel");
+                    long num       = rs.getLong("number");
+                    double zostatok = rs.getDouble("zostatok");
+                    double urok     = rs.getDouble("urok");
+                    String type     = rs.getString("type"); // napr. "STANDARD" / "OVERDRAFT"
+
+                    if ("OVERDRAFT".equalsIgnoreCase(type)) {
+                        double povolenePrecerpanie = rs.getDouble("povolene_precerpanie");
+                        double urokDoMinusu        = rs.getDouble("urok_do_minusu");
+                        return new UcetDoMinusu(
+                                id,
+                                majitel,
+                                num,
+                                zostatok,
+                                urok,
+                                povolenePrecerpanie,
+                                urokDoMinusu
+                        );
+                    } else {
+                        return new Ucet(
+                                id,
+                                majitel,
+                                num,
+                                zostatok,
+                                urok
+                        );
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
+    public long generateNextAccountNumber() throws SQLException {
+        String sql = "SELECT COALESCE(MAX(number), 2002000000) + 1 AS next_num FROM accounts";
+        try (Connection c = Db.get();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getLong("next_num");
+            }
+            // fallback
+            return 2002000001L;
+        }
+    }
+
+
     public List<Ucet> findAll() throws SQLException {
         String sql = """
             SELECT a.id,a.owner_name,a.number,a.balance,a.interest, t.code,
