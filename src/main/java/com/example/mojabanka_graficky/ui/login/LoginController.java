@@ -4,10 +4,10 @@ import com.example.mojabanka_graficky.HelloApplication;
 import com.example.mojabanka_graficky.security.Session;
 import com.example.mojabanka_graficky.security.AuthService;
 import javafx.fxml.FXML;
+import javafx.fxml.LoadException;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.fxml.LoadException;
 
 public class LoginController {
     @FXML private TextField usernameField;
@@ -25,18 +25,18 @@ public class LoginController {
         }
         try {
             if (Session.isAdmin()) {
+                // načíta admin-dashboard.fxml z resources/com/example/mojabanka_graficky/
                 HelloApplication.setRoot("admin-dashboard");
             } else {
+                // načíta user-dashboard.fxml
                 HelloApplication.setRoot("user-dashboard");
             }
         } catch (Exception e) {
-            // 1) vypíš celý stack trace do konzoly
             e.printStackTrace();
 
-            // 2) zostav užitočnú správu pre UI
-            String msg = e.getClass().getSimpleName() + ": " + (e.getMessage() == null ? "" : e.getMessage());
+            String msg = e.getClass().getSimpleName() + ": " +
+                    (e.getMessage() == null ? "" : e.getMessage());
 
-            // 3) špecifické tipy pre časté FXML problémy
             if (e instanceof LoadException) {
                 msg += " | Skontroluj fx:controller, <?import ...?> a cestu k FXML.";
             } else if (e instanceof NullPointerException) {

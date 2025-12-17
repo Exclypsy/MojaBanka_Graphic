@@ -1,11 +1,17 @@
 package com.example.mojabanka_graficky.model;
 
 public class UcetDoMinusu extends Ucet {
+
     private double povolenePrecerpanie;
     private double urokDoMinusu;
 
-    public UcetDoMinusu(long id, String majitel, long number, double zostatok, double urok,
-                        double povolenePrecerpanie, double urokDoMinusu) {
+    public UcetDoMinusu(long id,
+                        String majitel,
+                        long number,
+                        double zostatok,
+                        double urok,
+                        double povolenePrecerpanie,
+                        double urokDoMinusu) {
         super(id, majitel, number, zostatok, urok);
         this.povolenePrecerpanie = povolenePrecerpanie;
         this.urokDoMinusu = urokDoMinusu;
@@ -33,5 +39,23 @@ public class UcetDoMinusu extends Ucet {
         } else {
             System.out.println("Pokus o prekrocenie povoleneho precerpania");
         }
+    }
+
+    // ===== nové gettre, ktoré chýbali =====
+    public double getPovolenePrecerpanie() {
+        return povolenePrecerpanie;
+    }
+
+    public double getUrokDoMinusu() {
+        return urokDoMinusu;
+    }
+
+    // prípadne aj settre, ak chceš meniť tieto hodnoty z admina:
+    public void setPovolenePrecerpanie(double povolenePrecerpanie) {
+        this.povolenePrecerpanie = povolenePrecerpanie;
+    }
+
+    public void setUrokDoMinusu(double urokDoMinusu) {
+        this.urokDoMinusu = urokDoMinusu;
     }
 }

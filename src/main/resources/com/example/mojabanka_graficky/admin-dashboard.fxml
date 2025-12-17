@@ -4,46 +4,90 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.mojabanka_graficky.ui.admin.AdminDashboardController"
-            prefWidth="1000" prefHeight="700">
+            prefWidth="1100" prefHeight="750">
 
-    <top><Label text="Admin - všetky účty a užívatelia"/></top>
+    <top>
+        <HBox spacing="10" style="-fx-padding:10;" alignment="CENTER_LEFT">
+            <Label text="Admin - účty a používatelia"/>
+            <Button text="Odhlásiť" onAction="#onLogout"/>
+            <Label fx:id="globalStatus" textFill="red"/>
+        </HBox>
+    </top>
 
     <center>
-        <SplitPane dividerPositions="0.5">
+        <SplitPane dividerPositions="0.55">
             <!-- Účty -->
-            <TableView fx:id="accountsTable">
-                <columns>
-                    <TableColumn text="Majiteľ" fx:id="colOwner"/>
-                    <TableColumn text="Číslo účtu" fx:id="colNumber"/>
-                    <TableColumn text="Zostatok" fx:id="colBalance"/>
-                    <TableColumn text="Úrok" fx:id="colInterest"/>
-                    <TableColumn text="Typ" fx:id="colType"/>
-                </columns>
-            </TableView>
-            <!-- Užívateľa -->
-            <TableView fx:id="usersTable">
-                <columns>
-                    <TableColumn text="Username" fx:id="colUserUsername"/>
-                    <TableColumn text="Role" fx:id="colUserRole"/>
-                    <TableColumn text="Celé meno" fx:id="colUserFullName"/>
-                </columns>
-            </TableView>
+            <VBox spacing="5" style="-fx-padding:10;">
+                <Label text="Účty"/>
+                <TableView fx:id="accountsTable">
+                    <columns>
+                        <TableColumn text="Majiteľ" fx:id="colOwner"/>
+                        <TableColumn text="Číslo účtu" fx:id="colNumber"/>
+                        <TableColumn text="Zostatok" fx:id="colBalance"/>
+                        <TableColumn text="Úrok" fx:id="colInterest"/>
+                        <TableColumn text="Typ" fx:id="colType"/>
+                    </columns>
+                </TableView>
+
+                <!-- Formulár na úpravu vybraného účtu -->
+                <TitledPane text="Úprava vybraného účtu" expanded="true">
+                    <content>
+                        <HBox spacing="8" style="-fx-padding:10;">
+                            <TextField fx:id="editOwnerField" promptText="Majiteľ" prefWidth="150"/>
+                            <TextField fx:id="editNumberField" promptText="Číslo účtu" prefWidth="130"/>
+                            <TextField fx:id="editBalanceField" promptText="Zostatok" prefWidth="100"/>
+                            <TextField fx:id="editInterestField" promptText="Úrok" prefWidth="80"/>
+                            <ChoiceBox fx:id="editTypeChoice" prefWidth="110"/>
+                            <TextField fx:id="editOverdraftLimitField" promptText="Limit (OVERDRAFT)" prefWidth="130"/>
+                            <TextField fx:id="editOverdraftInterestField" promptText="Úrok mínus" prefWidth="100"/>
+                            <Button text="Uložiť zmeny" onAction="#onUpdateAccount"/>
+                        </HBox>
+                    </content>
+                </TitledPane>
+            </VBox>
+
+            <!-- Používatelia + vytvorenie účtu/používateľa -->
+            <VBox spacing="5" style="-fx-padding:10;">
+                <Label text="Používatelia"/>
+                <TableView fx:id="usersTable">
+                    <columns>
+                        <TableColumn text="Username" fx:id="colUserUsername"/>
+                        <TableColumn text="Role" fx:id="colUserRole"/>
+                        <TableColumn text="Celé meno" fx:id="colUserFullName"/>
+                    </columns>
+                </TableView>
+
+                <TitledPane text="Vytvoriť používateľa + účet" expanded="true">
+                    <content>
+                        <VBox spacing="6" style="-fx-padding:10;">
+                            <!-- údaje používateľa -->
+                            <HBox spacing="8">
+                                <TextField fx:id="userUsernameField" promptText="Username"/>
+                                <PasswordField fx:id="userPasswordField" promptText="Heslo"/>
+                                <TextField fx:id="userFullNameField" promptText="Celé meno"/>
+                                <ChoiceBox fx:id="userRoleChoice"/>
+                            </HBox>
+                            <!-- údaje účtu -->
+                            <HBox spacing="8">
+                                <TextField fx:id="newAccountNumberField" promptText="Číslo účtu"/>
+                                <TextField fx:id="newAccountBalanceField" promptText="Počiatočný zostatok"/>
+                                <TextField fx:id="newAccountInterestField" promptText="Úrok"/>
+                                <ChoiceBox fx:id="newAccountTypeChoice"/>
+                                <TextField fx:id="newAccountOverdraftLimitField" promptText="Limit (OVERDRAFT)"/>
+                                <TextField fx:id="newAccountOverdraftInterestField" promptText="Úrok mínus"/>
+                                <Button text="Vytvoriť používateľa + účet" onAction="#onCreateUserWithAccount"/>
+                            </HBox>
+                            <Label fx:id="userCreateStatus" textFill="red"/>
+                        </VBox>
+                    </content>
+                </TitledPane>
+            </VBox>
         </SplitPane>
     </center>
+
     <bottom>
-        <VBox spacing="10" style="-fx-padding:10;">
-            <HBox spacing="8">
-                <Button text="Zmazať účet" onAction="#onDelete"/>
-            </HBox>
-            <Separator/>
-            <HBox spacing="8">
-                <TextField fx:id="userUsernameField" promptText="Nový username"/>
-                <PasswordField fx:id="userPasswordField" promptText="Heslo"/>
-                <TextField fx:id="userFullNameField" promptText="Celé meno"/>
-                <ChoiceBox fx:id="userRoleChoice"/>
-                <Button text="Vytvor používateľa" onAction="#onCreateUser"/>
-                <Label fx:id="userCreateStatus" textFill="red"/>
-            </HBox>
-        </VBox>
+        <HBox spacing="8" style="-fx-padding:10;">
+            <Button text="Zmazať vybraný účet" onAction="#onDeleteAccount"/>
+        </HBox>
     </bottom>
 </BorderPane>

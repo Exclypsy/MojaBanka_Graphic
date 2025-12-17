@@ -4,6 +4,7 @@ module com.example.mojabanka_graficky {
     requires java.sql;
 
     requires org.kordamp.bootstrapfx.core;
+    requires mysql.connector.j;
 
     opens com.example.mojabanka_graficky.ui.login to javafx.fxml;
     opens com.example.mojabanka_graficky.ui.user to javafx.fxml;
