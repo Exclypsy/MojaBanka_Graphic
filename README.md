@@ -245,18 +245,9 @@ public class ConsoleApp {
 
 ---
 
-## 6. Zhrnutie
+## 6. Zhrnutie - Vlastné slová
 
-Projekt demonštruje:
-
-* OOP princípy
-* DAO a JDBC
-* JavaFX MVC architektúru
-* Zdieľanú logiku pre GUI aj konzolu
-* Prístupové práva používateľov
-* Auditný log transakcií
-
-Aplikácia je plne funkčný bankový systém s databázovým backendom.
+Pri tomto projekte som robil celú JavaFX aplikáciu pre nasu Banqu :D.  Pri práci som si relativne dobre zopakoval syntax , triedy a výnimky.  Naucil som sa lepšie pouzivať MVC model. Strašne veľa času som stravil nad GUI, proste scene builder mi na Macu nefungoval. Ked som robil prepojenie s databazou tak mi AI poradilo ze spravne sa to ma robit oddelene tak som sa nakoniec rozhodol ze spravim DAO a spravil som to odelene. Musel som sa aj celkom dost zamysliet pri vytvarani rolí že kto čo može.  Dedenie bolo celkom zaujimave bud mi to fungovalo alebo som nad tym stravil pár hodín, myslím si že sa mi podarilo si utvrdiť teoriu a prepojiť to neako s tou praxou.  Konzolové ovladanie som robil ako posledné a tým ze som to robil posledné a nie spolu s celou aplikaciou tak som si musel kúsok hlavu nad tým polámať, nakoniec som to zvladol a využil uz existujúcu logiku z GUI.  Tento projekt mi ukázal to že pracovať na zložitejšej aplikacii nie je nič hrozné len treba chcieť a mať voľu sa učit nové veci. 
 
 ---
 
