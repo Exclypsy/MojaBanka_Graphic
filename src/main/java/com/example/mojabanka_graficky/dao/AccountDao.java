@@ -49,40 +49,39 @@ public class AccountDao {
         }
     }
 
+    /** Nájde účet podľa čísla účtu. */
     public Ucet findByNumber(long number) throws SQLException {
-        String sql = "SELECT * FROM accounts WHERE number = ?";
+        String sql = """
+            SELECT a.id,a.owner_name,a.number,a.balance,a.interest, t.code,
+                   a.overdraft_limit,a.overdraft_interest
+            FROM accounts a
+            JOIN account_types t ON t.id=a.type_id
+            WHERE a.number = ?
+        """;
         try (Connection c = Db.get();
              PreparedStatement ps = c.prepareStatement(sql)) {
 
             ps.setLong(1, number);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    long id        = rs.getLong("id");
-                    String majitel = rs.getString("majitel");
-                    long num       = rs.getLong("number");
-                    double zostatok = rs.getDouble("zostatok");
-                    double urok     = rs.getDouble("urok");
-                    String type     = rs.getString("type"); // napr. "STANDARD" / "OVERDRAFT"
-
-                    if ("OVERDRAFT".equalsIgnoreCase(type)) {
-                        double povolenePrecerpanie = rs.getDouble("povolene_precerpanie");
-                        double urokDoMinusu        = rs.getDouble("urok_do_minusu");
+                    String code = rs.getString("code");
+                    if ("OVERDRAFT".equals(code)) {
                         return new UcetDoMinusu(
-                                id,
-                                majitel,
-                                num,
-                                zostatok,
-                                urok,
-                                povolenePrecerpanie,
-                                urokDoMinusu
+                                rs.getLong("id"),
+                                rs.getString("owner_name"),
+                                rs.getLong("number"),
+                                rs.getDouble("balance"),
+                                rs.getDouble("interest"),
+                                rs.getDouble("overdraft_limit"),
+                                rs.getDouble("overdraft_interest")
                         );
                     } else {
                         return new Ucet(
-                                id,
-                                majitel,
-                                num,
-                                zostatok,
-                                urok
+                                rs.getLong("id"),
+                                rs.getString("owner_name"),
+                                rs.getLong("number"),
+                                rs.getDouble("balance"),
+                                rs.getDouble("interest")
                         );
                     }
                 }
@@ -91,6 +90,46 @@ public class AccountDao {
         return null;
     }
 
+    /** Nájde účet podľa ID (pre AdminConsoleMenu.updateAccount). */
+    public Ucet findById(int id) throws SQLException {
+        String sql = """
+            SELECT a.id,a.owner_name,a.number,a.balance,a.interest, t.code,
+                   a.overdraft_limit,a.overdraft_interest
+            FROM accounts a
+            JOIN account_types t ON t.id=a.type_id
+            WHERE a.id = ?
+        """;
+        try (Connection c = Db.get();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String code = rs.getString("code");
+                    if ("OVERDRAFT".equals(code)) {
+                        return new UcetDoMinusu(
+                                rs.getLong("id"),
+                                rs.getString("owner_name"),
+                                rs.getLong("number"),
+                                rs.getDouble("balance"),
+                                rs.getDouble("interest"),
+                                rs.getDouble("overdraft_limit"),
+                                rs.getDouble("overdraft_interest")
+                        );
+                    } else {
+                        return new Ucet(
+                                rs.getLong("id"),
+                                rs.getString("owner_name"),
+                                rs.getLong("number"),
+                                rs.getDouble("balance"),
+                                rs.getDouble("interest")
+                        );
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     public long generateNextAccountNumber() throws SQLException {
         String sql = "SELECT COALESCE(MAX(number), 2002000000) + 1 AS next_num FROM accounts";
@@ -100,11 +139,9 @@ public class AccountDao {
             if (rs.next()) {
                 return rs.getLong("next_num");
             }
-            // fallback
             return 2002000001L;
         }
     }
-
 
     public List<Ucet> findAll() throws SQLException {
         String sql = """

@@ -63,3 +63,37 @@ VALUES
    'Bežný Používateľ', 2002000002, -50.00, 0.800,
    (SELECT id FROM account_types WHERE code='OVERDRAFT'),
    300.00, 14.900);
+
+CREATE TABLE transactions (
+  id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+  created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  user_id           INT NULL,
+  account_id        INT NOT NULL,
+  operation_type    ENUM('DEPOSIT','WITHDRAW','TRANSFER_DEBIT','TRANSFER_CREDIT') NOT NULL,
+
+  amount            DECIMAL(15,2) NOT NULL,
+
+  balance_after     DECIMAL(15,2) NOT NULL,
+
+  related_account_id INT NULL,
+
+  description       VARCHAR(255) NULL,
+
+  CONSTRAINT fk_transactions_user
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+
+  CONSTRAINT fk_transactions_account
+    FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+
+  CONSTRAINT fk_transactions_related_account
+    FOREIGN KEY (related_account_id) REFERENCES accounts(id) ON DELETE SET NULL,
+
+  INDEX idx_transactions_account (account_id),
+  INDEX idx_transactions_user (user_id),
+  INDEX idx_transactions_created_at (created_at)
+) ENGINE=InnoDB;
+
+
+ALTER TABLE transactions
+MODIFY COLUMN operation_type VARCHAR(20) NOT NULL;

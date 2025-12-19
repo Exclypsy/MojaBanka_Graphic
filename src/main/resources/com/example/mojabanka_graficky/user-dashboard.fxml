@@ -4,7 +4,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.mojabanka_graficky.ui.user.UserDashboardController"
-            prefWidth="900" prefHeight="600">
+            prefWidth="900" prefHeight="650">
 
     <!-- HEADER -->
     <top>
@@ -19,56 +19,75 @@
         </HBox>
     </top>
 
-    <!-- CENTER – tabuľka + operácie -->
+    <!-- CENTER – tabuľka + operácie + log -->
     <center>
-        <HBox spacing="10" style="-fx-padding:10;">
-            <!-- Tabuľka účtov -->
-            <VBox HBox.hgrow="ALWAYS" spacing="6">
-                <Label text="Zoznam účtov" style="-fx-font-weight:bold;"/>
-                <TableView fx:id="accountsTable" VBox.vgrow="ALWAYS">
-                    <columns>
-                        <TableColumn text="Majiteľ" fx:id="colOwner" prefWidth="150"/>
-                        <TableColumn text="Číslo" fx:id="colNumber" prefWidth="150"/>
-                        <TableColumn text="Zostatok" fx:id="colBalance" prefWidth="120"/>
-                        <TableColumn text="Úrok" fx:id="colInterest" prefWidth="80"/>
-                        <TableColumn text="Typ" fx:id="colType" prefWidth="100"/>
-                    </columns>
-                </TableView>
-            </VBox>
+        <VBox spacing="8" style="-fx-padding:10;">
+            <HBox spacing="10">
+                <!-- Tabuľka účtov -->
+                <VBox HBox.hgrow="ALWAYS" spacing="6">
+                    <Label text="Zoznam účtov" style="-fx-font-weight:bold;"/>
+                    <TableView fx:id="accountsTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn text="Majiteľ" fx:id="colOwner" prefWidth="150"/>
+                            <TableColumn text="Číslo" fx:id="colNumber" prefWidth="150"/>
+                            <TableColumn text="Zostatok" fx:id="colBalance" prefWidth="120"/>
+                            <TableColumn text="Úrok" fx:id="colInterest" prefWidth="80"/>
+                            <TableColumn text="Typ" fx:id="colType" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                </VBox>
 
-            <!-- Operácie -->
-            <VBox spacing="12" prefWidth="260">
-                <TitledPane text="Operácie s účtom" expanded="true">
-                    <content>
-                        <VBox spacing="8" style="-fx-padding:8;">
-                            <Label text="Vklad / výber:" style="-fx-font-weight:bold;"/>
-                            <TextField fx:id="amountField" promptText="Suma"/>
-                            <HBox spacing="8">
-                                <Button text="Vklad" onAction="#onDeposit" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                                <Button text="Výber" onAction="#onWithdraw" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
-                            </HBox>
-                            <Button text="Zap. úrok" onAction="#onApplyInterest" maxWidth="Infinity"/>
-                        </VBox>
-                    </content>
-                </TitledPane>
+                <!-- Operácie -->
+                <VBox spacing="12" prefWidth="260">
+                    <TitledPane text="Operácie s účtom" expanded="true">
+                        <content>
+                            <VBox spacing="8" style="-fx-padding:8;">
+                                <Label text="Vklad / výber:" style="-fx-font-weight:bold;"/>
+                                <TextField fx:id="amountField" promptText="Suma"/>
+                                <HBox spacing="8">
+                                    <Button text="Vklad" onAction="#onDeposit" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                                    <Button text="Výber" onAction="#onWithdraw" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                                </HBox>
+                                <Button text="Zap. úrok" onAction="#onApplyInterest" maxWidth="Infinity"/>
+                            </VBox>
+                        </content>
+                    </TitledPane>
 
-                <TitledPane text="Prevod na iný účet" expanded="true">
-                    <content>
-                        <VBox spacing="8" style="-fx-padding:8;">
-                            <Label text="Cieľové číslo účtu:"/>
-                            <TextField fx:id="transferTargetField" promptText="napr. 2002000001"/>
-                            <Label text="Suma:"/>
-                            <TextField fx:id="transferAmountField" promptText="Suma"/>
-                            <Button text="Odoslať prevod"
-                                    onAction="#onTransfer"
-                                    maxWidth="Infinity"
-                                    style="-fx-background-color:#388E3C; -fx-text-fill:white;"/>
-                        </VBox>
-                    </content>
-                </TitledPane>
+                    <TitledPane text="Prevod na iný účet" expanded="true">
+                        <content>
+                            <VBox spacing="8" style="-fx-padding:8;">
+                                <Label text="Cieľové číslo účtu:"/>
+                                <TextField fx:id="transferTargetField" promptText="napr. 2002000001"/>
+                                <Label text="Suma:"/>
+                                <TextField fx:id="transferAmountField" promptText="Suma"/>
+                                <Button text="Odoslať prevod"
+                                        onAction="#onTransfer"
+                                        maxWidth="Infinity"
+                                        style="-fx-background-color:#388E3C; -fx-text-fill:white;"/>
+                            </VBox>
+                        </content>
+                    </TitledPane>
 
-                <Label fx:id="statusLabel" textFill="red" wrapText="true"/>
-            </VBox>
-        </HBox>
+                    <Label fx:id="statusLabel" textFill="red" wrapText="true"/>
+                </VBox>
+            </HBox>
+
+            <!-- Log transakcií používateľa -->
+            <TitledPane text="Moje transakcie" expanded="true">
+                <content>
+                    <TableView fx:id="transactionsTable" prefHeight="180">
+                        <columns>
+                            <TableColumn text="Čas" fx:id="colTrCreated" prefWidth="150"/>
+                            <TableColumn text="Účet" fx:id="colTrAccount" prefWidth="130"/>
+                            <TableColumn text="Typ" fx:id="colTrType" prefWidth="120"/>
+                            <TableColumn text="Suma" fx:id="colTrAmount" prefWidth="100"/>
+                            <TableColumn text="Zostatok po" fx:id="colTrBalanceAfter" prefWidth="120"/>
+                            <TableColumn text="Druhý účet" fx:id="colTrRelatedAccount" prefWidth="130"/>
+                            <TableColumn text="Popis" fx:id="colTrDescription" prefWidth="220"/>
+                        </columns>
+                    </TableView>
+                </content>
+            </TitledPane>
+        </VBox>
     </center>
 </BorderPane>

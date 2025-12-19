@@ -52,7 +52,7 @@
             <!-- Tabuľka účtov -->
             <TitledPane text="Prehľad účtov" expanded="true">
                 <content>
-                    <TableView fx:id="accountsTable" prefHeight="380">
+                    <TableView fx:id="accountsTable" prefHeight="260">
                         <columns>
                             <TableColumn text="Username" fx:id="colUserUsername" prefWidth="130"/>
                             <TableColumn text="Meno" fx:id="colUserFullName" prefWidth="160"/>
@@ -191,6 +191,25 @@
                     </content>
                 </TitledPane>
             </HBox>
+
+            <!-- Log transakcií -->
+            <TitledPane text="Log transakcií" expanded="true">
+                <content>
+                    <TableView fx:id="transactionsTable" prefHeight="160">
+                        <columns>
+                            <TableColumn text="Čas" fx:id="colTrCreated" prefWidth="150"/>
+                            <TableColumn text="Používateľ" fx:id="colTrUser" prefWidth="120"/>
+                            <TableColumn text="Účet" fx:id="colTrAccount" prefWidth="150"/>
+                            <TableColumn text="Typ" fx:id="colTrType" prefWidth="130"/>
+                            <TableColumn text="Suma" fx:id="colTrAmount" prefWidth="100"/>
+                            <TableColumn text="Zostatok po" fx:id="colTrBalanceAfter" prefWidth="120"/>
+                            <TableColumn text="Druhý účet" fx:id="colTrRelatedAccount" prefWidth="150"/>
+                            <TableColumn text="Popis" fx:id="colTrDescription" prefWidth="200"/>
+                        </columns>
+                    </TableView>
+                </content>
+            </TitledPane>
+
         </VBox>
     </center>
 </BorderPane>

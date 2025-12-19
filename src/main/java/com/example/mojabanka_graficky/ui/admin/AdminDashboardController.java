@@ -2,6 +2,7 @@ package com.example.mojabanka_graficky.ui.admin;
 
 import com.example.mojabanka_graficky.HelloApplication;
 import com.example.mojabanka_graficky.dao.AccountDao;
+import com.example.mojabanka_graficky.dao.TransactionDao;
 import com.example.mojabanka_graficky.dao.UserDao;
 import com.example.mojabanka_graficky.model.Ucet;
 import com.example.mojabanka_graficky.model.UcetDoMinusu;
@@ -15,6 +16,8 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+
+import java.time.format.DateTimeFormatter;
 
 public class AdminDashboardController {
 
@@ -61,11 +64,27 @@ public class AdminDashboardController {
     @FXML private Label userCreateStatus;
     @FXML private Label globalStatus;
 
+    // tabuľka transakcií
+    @FXML private TableView<TransactionView> transactionsTable;
+    @FXML private TableColumn<TransactionView, String> colTrCreated;
+    @FXML private TableColumn<TransactionView, String> colTrUser;
+    @FXML private TableColumn<TransactionView, String> colTrAccount;
+    @FXML private TableColumn<TransactionView, String> colTrType;
+    @FXML private TableColumn<TransactionView, Number> colTrAmount;
+    @FXML private TableColumn<TransactionView, Number> colTrBalanceAfter;
+    @FXML private TableColumn<TransactionView, String> colTrRelatedAccount;
+    @FXML private TableColumn<TransactionView, String> colTrDescription;
+
     private final AccountDao accountDao = new AccountDao();
     private final UserDao userDao = new UserDao();
+    private final TransactionDao transactionDao = new TransactionDao();
 
     private final ObservableList<UcetWrapper> masterData = FXCollections.observableArrayList();
     private FilteredList<UcetWrapper> filteredData;
+
+    private final ObservableList<TransactionView> transactionsData = FXCollections.observableArrayList();
+
+    private final DateTimeFormatter dtFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @FXML
     public void initialize() {
@@ -149,6 +168,26 @@ public class AdminDashboardController {
                 fillEditForm(sel);
             }
         });
+
+        // transakcie – stĺpce
+        colTrCreated.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().createdAt().format(dtFmt)));
+        colTrUser.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().username()));
+        colTrAccount.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().accountNumber()));
+        colTrType.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().operationType()));
+        colTrAmount.setCellValueFactory(c ->
+                new SimpleDoubleProperty(c.getValue().amount()));
+        colTrBalanceAfter.setCellValueFactory(c ->
+                new SimpleDoubleProperty(c.getValue().balanceAfter()));
+        colTrRelatedAccount.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().relatedAccountNumber()));
+        colTrDescription.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().description()));
+
+        loadTransactions();
     }
 
     private void reloadData() {
@@ -172,6 +211,15 @@ public class AdminDashboardController {
             }
         } catch (Exception e) {
             globalStatus.setText("Chyba načítania dát: " + e.getMessage());
+        }
+    }
+
+    private void loadTransactions() {
+        try {
+            transactionsData.setAll(transactionDao.findAllForAdmin());
+            transactionsTable.setItems(transactionsData);
+        } catch (Exception e) {
+            globalStatus.setText("Chyba načítania logu transakcií: " + e.getMessage());
         }
     }
 
@@ -266,11 +314,9 @@ public class AdminDashboardController {
 
         try {
             if (acc != null) {
-                // má účet → zmaž účet
                 accountDao.delete(acc.getId());
                 globalStatus.setText("Účet zmazaný.");
             } else {
-                // nemá účet → zmaž používateľa
                 userDao.delete(u.getId());
                 globalStatus.setText("Používateľ zmazaný.");
             }
@@ -330,7 +376,6 @@ public class AdminDashboardController {
         try {
             int userId = userDao.createAndReturnId(username, password, role, fullName);
 
-            // účet voliteľný – ak nie sú vyplnené údaje účtu, vytvor len usera
             if (strBalance.isEmpty() && strInterest.isEmpty() && type == null) {
                 userCreateStatus.setText("Používateľ vytvorený bez účtu.");
                 reloadData();
@@ -384,4 +429,17 @@ public class AdminDashboardController {
         public User getUser() { return user; }
         public Ucet getAccount() { return account; }
     }
+
+    // jednoduchý view objekt na zobrazenie transakcií
+    public record TransactionView(
+            long id,
+            java.time.LocalDateTime createdAt,
+            String username,
+            String accountNumber,
+            String operationType,
+            double amount,
+            double balanceAfter,
+            String relatedAccountNumber,
+            String description
+    ) {}
 }

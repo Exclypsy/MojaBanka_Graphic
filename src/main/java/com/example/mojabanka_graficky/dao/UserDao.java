@@ -26,6 +26,26 @@ public class UserDao {
         }
     }
 
+    // Login podľa username + hesla (pre konzolu)
+    // POZOR: používa sa password_hash ako obyčajný text, rovnako ako v create()
+    public User findByUsernameAndPassword(String username, String rawPassword) throws SQLException {
+        String sql = "SELECT id, username, password_hash, role, full_name " +
+                "FROM users WHERE username = ? AND password_hash = ?";
+        try (Connection c = Db.get();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ps.setString(2, rawPassword);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+                return null;
+            }
+        }
+    }
+
     public void delete(int id) throws SQLException {
         try (Connection c = Db.get();
              PreparedStatement ps = c.prepareStatement(

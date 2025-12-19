@@ -10,7 +10,7 @@
     <center>
         <VBox alignment="CENTER" spacing="12">
             <children>
-                <Label text="Moja Banka"
+                <Label text="Banqa MS"
                        style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
 
                 <Label text="Prihlásenie"

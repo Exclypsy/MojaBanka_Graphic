@@ -2,6 +2,8 @@ package com.example.mojabanka_graficky.ui.user;
 
 import com.example.mojabanka_graficky.HelloApplication;
 import com.example.mojabanka_graficky.dao.AccountDao;
+import com.example.mojabanka_graficky.dao.TransactionDao;
+import com.example.mojabanka_graficky.dao.TransactionDao.TransactionUserView;
 import com.example.mojabanka_graficky.model.Ucet;
 import com.example.mojabanka_graficky.model.UcetDoMinusu;
 import com.example.mojabanka_graficky.security.Session;
@@ -12,6 +14,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+
+import java.time.format.DateTimeFormatter;
 
 public class UserDashboardController {
 
@@ -29,8 +33,23 @@ public class UserDashboardController {
     @FXML private Label statusLabel;
     @FXML private Label userLabel;
 
+    // tabuľka transakcií používateľa
+    @FXML private TableView<TransactionUserView> transactionsTable;
+    @FXML private TableColumn<TransactionUserView, String> colTrCreated;
+    @FXML private TableColumn<TransactionUserView, String> colTrAccount;
+    @FXML private TableColumn<TransactionUserView, String> colTrType;
+    @FXML private TableColumn<TransactionUserView, Number> colTrAmount;
+    @FXML private TableColumn<TransactionUserView, Number> colTrBalanceAfter;
+    @FXML private TableColumn<TransactionUserView, String> colTrRelatedAccount;
+    @FXML private TableColumn<TransactionUserView, String> colTrDescription;
+
     private final AccountDao accountDao = new AccountDao();
+    private final TransactionDao transactionDao = new TransactionDao();
+
     private final ObservableList<Ucet> data = FXCollections.observableArrayList();
+    private final ObservableList<TransactionUserView> transactionsData = FXCollections.observableArrayList();
+
+    private final DateTimeFormatter dtFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @FXML
     public void initialize() {
@@ -46,7 +65,24 @@ public class UserDashboardController {
             userLabel.setText("Prihlásený: " + Session.get().getUsername());
         }
 
+        // stĺpce transakcií
+        colTrCreated.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().createdAt().format(dtFmt)));
+        colTrAccount.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().accountNumber()));
+        colTrType.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().operationType()));
+        colTrAmount.setCellValueFactory(c ->
+                new SimpleDoubleProperty(c.getValue().amount()));
+        colTrBalanceAfter.setCellValueFactory(c ->
+                new SimpleDoubleProperty(c.getValue().balanceAfter()));
+        colTrRelatedAccount.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().relatedAccountNumber()));
+        colTrDescription.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().description()));
+
         loadData();
+        loadUserTransactions();
     }
 
     private void loadData() {
@@ -55,7 +91,20 @@ public class UserDashboardController {
             accountsTable.setItems(data);
             statusLabel.setText("");
         } catch (Exception e) {
-            statusLabel.setText("Chyba načítania účtov");
+            e.printStackTrace();
+            statusLabel.setText("Chyba načítania účtov: " +
+                    e.getClass().getSimpleName() + " " + e.getMessage());
+        }
+    }
+
+    private void loadUserTransactions() {
+        try {
+            transactionsData.setAll(transactionDao.findForUser(Session.get().getId()));
+            transactionsTable.setItems(transactionsData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            statusLabel.setText("Chyba načítania transakcií: " +
+                    e.getClass().getSimpleName() + " " + e.getMessage());
         }
     }
 
@@ -129,11 +178,35 @@ public class UserDashboardController {
             accountDao.updateBalance(from.getId(), from.getZostatok());
             accountDao.updateBalance(to.getId(), to.getZostatok());
 
+            Integer userId = (Session.get() != null) ? Session.get().getId() : null;
+
+            transactionDao.logTransaction(
+                    userId,
+                    from.getId(),
+                    "TRANSFER_DEBIT",
+                    amount,
+                    from.getZostatok(),
+                    to.getId(),
+                    "Prevod na účet " + targetNumber
+            );
+
+            transactionDao.logTransaction(
+                    userId,
+                    to.getId(),
+                    "TRANSFER_CREDIT",
+                    amount,
+                    to.getZostatok(),
+                    from.getId(),
+                    "Prijatý prevod z účtu " + from.getNumber()
+            );
+
             accountsTable.refresh();
+            loadUserTransactions(); // refresh logu
             statusLabel.setText("Prevod " + amount + " na účet " + targetNumber + " prebehol.");
         } catch (Exception e) {
             e.printStackTrace();
-            statusLabel.setText("Chyba prevodu: " + e.getMessage());
+            statusLabel.setText("Chyba prevodu: " +
+                    e.getClass().getSimpleName() + " " + e.getMessage());
         }
     }
 
@@ -152,13 +225,43 @@ public class UserDashboardController {
             statusLabel.setText("Vyber účet.");
             return;
         }
+
+        double before = sel.getZostatok();
         op.accept(sel);
+        double after = sel.getZostatok();
+
         try {
             accountDao.updateBalance(sel.getId(), sel.getZostatok());
+
+            String opType;
+            if ("Vklad prebehol".equals(okMsg)) {
+                opType = "DEPOSIT";
+            } else if ("Výber prebehol".equals(okMsg)) {
+                opType = "WITHDRAW";
+            } else {
+                opType = "INTEREST";
+            }
+
+            double amount = Math.abs(after - before);
+            Integer userId = (Session.get() != null) ? Session.get().getId() : null;
+
+            transactionDao.logTransaction(
+                    userId,
+                    sel.getId(),
+                    opType,
+                    amount,
+                    after,
+                    null,
+                    okMsg
+            );
+
             accountsTable.refresh();
+            loadUserTransactions(); // refresh logu
             statusLabel.setText(okMsg);
         } catch (Exception e) {
-            statusLabel.setText("Chyba ukladania.");
+            e.printStackTrace();
+            statusLabel.setText("Chyba ukladania: " +
+                    e.getClass().getSimpleName() + " " + e.getMessage());
         }
     }
 
