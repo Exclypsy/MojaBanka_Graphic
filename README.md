@@ -1,4 +1,4 @@
-````md
+
 # Moja Banka (Java + JavaFX + MySQL)
 
 Projekt **Moja Banka** je banková aplikácia vytvorená v jazyku **Java**, s grafickým rozhraním **JavaFX**, databázou **MySQL** a konzolovou verziou aplikácie. Projekt demonštruje použitie **OOP princípov**, **MVC architektúry**, **DAO vrstvy** a **prístupových práv používateľov**.
@@ -14,7 +14,7 @@ Objektovo orientované programovanie (OOP) pracuje s pojmami **trieda** a **obje
 Zapúzdrenie (enkapsulácia) znamená, že údaje a operácie nad nimi sú zabalené v jednej triede a vonkajší kód pristupuje k údajom cez metódy, nie priamo.
 
 V projekte **Moja Banka** je príkladom trieda **Ucet**, ktorá obsahuje vlastnosti:
-
+```
 - `id`
 - `owner_name`
 - `number`
@@ -26,7 +26,7 @@ a metódy:
 - `vklad()`
 - `vyber()`
 - `zapocitajUrok()`
-
+```
 Vonkajší kód nemení zostatok priamo, ale vždy cez tieto metódy, čím sa zabezpečí kontrola pravidiel (kontrola zostatku, limitu a pod.).
 
 ```java
