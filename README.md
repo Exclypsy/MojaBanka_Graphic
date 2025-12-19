@@ -262,12 +262,21 @@ Aplikácia je plne funkčný bankový systém s databázovým backendom.
 
 ## 7. Screenshoty
 
-* GUI – Login
-* User Dashboard
-* Admin Dashboard
-* Log transakcií
-* Konzolové menu
-* Databázová štruktúra (MySQL)
+* Konzola
+<img width="3598" height="2258" alt="image" src="https://github.com/user-attachments/assets/e17c4b17-0146-4955-922a-03c775504ae3" />
+
+* Databáza
+<img width="3440" height="2086" alt="image" src="https://github.com/user-attachments/assets/dbcebc34-ee1e-41fe-a926-c3d0590fde61" />
+
+* Úvodná obrazovka
+<img width="2576" height="1862" alt="image" src="https://github.com/user-attachments/assets/28edd44e-6cde-4b20-9db7-39de4e4b50f1" />
+
+* Admin panel
+<img width="2566" height="1868" alt="image" src="https://github.com/user-attachments/assets/c409efc5-6444-4302-9ae9-b59692467563" />
+
+* Klient panel
+<img width="2560" height="1856" alt="image" src="https://github.com/user-attachments/assets/28cfc48b-7073-4bf1-85e1-948dedfd9f44" />
+
 
 ```
 ```
