@@ -174,7 +174,6 @@ Model obsahuje:
 View vrstva pozostáva z:
 
 * FXML súborov (`login-view.fxml`, `user-dashboard.fxml`, `admin-dashboard.fxml`)
-* CSS štýlov
 
 ---
 
