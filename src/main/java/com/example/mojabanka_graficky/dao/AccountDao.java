@@ -8,8 +8,21 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO (Data Access Object) trieda pre operácie s bankovými účtami (tabuľka {@code accounts}).
+ * Poskytuje metódy na vyhľadávanie, vytváranie, úpravu a mazanie účtov.
+ * Rozlišuje medzi typom STANDARD ({@link Ucet}) a OVERDRAFT ({@link UcetDoMinusu}).
+ */
 public class AccountDao {
 
+    /**
+     * Vráti všetky účty patriace danému používateľovi.
+     * Podľa kódu typu účtu vracia buď {@link UcetDoMinusu} alebo {@link Ucet}.
+     *
+     * @param userId ID používateľa
+     * @return zoznam účtov daného používateľa
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public List<Ucet> findByUserId(int userId) throws SQLException {
         String sql = """
             SELECT a.id,a.owner_name,a.number,a.balance,a.interest, t.code,
@@ -24,6 +37,7 @@ public class AccountDao {
                 List<Ucet> out = new ArrayList<>();
                 while (rs.next()) {
                     String code = rs.getString("code");
+                    // Rozlíšenie typu účtu podľa kódu z DB
                     if ("OVERDRAFT".equals(code)) {
                         out.add(new UcetDoMinusu(
                                 rs.getLong("id"),
@@ -49,7 +63,14 @@ public class AccountDao {
         }
     }
 
-    /** Nájde účet podľa čísla účtu. */
+    /**
+     * Nájde účet podľa čísla účtu.
+     * Používa sa pri prevodoch – overenie existencie cieľového účtu.
+     *
+     * @param number číslo bankového účtu
+     * @return nájdený {@link Ucet} (alebo {@link UcetDoMinusu}), alebo null ak neexistuje
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public Ucet findByNumber(long number) throws SQLException {
         String sql = """
             SELECT a.id,a.owner_name,a.number,a.balance,a.interest, t.code,
@@ -90,7 +111,14 @@ public class AccountDao {
         return null;
     }
 
-    /** Nájde účet podľa ID (pre AdminConsoleMenu.updateAccount). */
+    /**
+     * Nájde účet podľa jeho ID.
+     * Používa sa pri úprave účtu adminom v konzole.
+     *
+     * @param id ID účtu v databáze
+     * @return nájdený {@link Ucet} (alebo {@link UcetDoMinusu}), alebo null ak neexistuje
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public Ucet findById(int id) throws SQLException {
         String sql = """
             SELECT a.id,a.owner_name,a.number,a.balance,a.interest, t.code,
@@ -131,6 +159,14 @@ public class AccountDao {
         return null;
     }
 
+    /**
+     * Vygeneruje nasledujúce číslo bankového účtu.
+     * Vezme maximálne existujúce číslo a pridá 1.
+     * Ak tabuľka neobsahuje žiadne účty, začína od 2002000001.
+     *
+     * @return nové unikátne číslo účtu
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public long generateNextAccountNumber() throws SQLException {
         String sql = "SELECT COALESCE(MAX(number), 2002000000) + 1 AS next_num FROM accounts";
         try (Connection c = Db.get();
@@ -143,6 +179,12 @@ public class AccountDao {
         }
     }
 
+    /**
+     * Vráti všetky účty zo databázy (pre admin pohľad).
+     *
+     * @return zoznam všetkých účtov
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public List<Ucet> findAll() throws SQLException {
         String sql = """
             SELECT a.id,a.owner_name,a.number,a.balance,a.interest, t.code,
@@ -181,6 +223,14 @@ public class AccountDao {
         }
     }
 
+    /**
+     * Aktualizuje zostatok účtu v databáze.
+     * Volá sa po každej operácii (vklad, výber, úrok, prevod).
+     *
+     * @param accountId  ID účtu, ktorého zostatok sa má aktualizovať
+     * @param newBalance nový zostatok na uloženie
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public void updateBalance(long accountId, double newBalance) throws SQLException {
         String sql = "UPDATE accounts SET balance=? WHERE id=?";
         try (Connection c = Db.get(); PreparedStatement ps = c.prepareStatement(sql)) {
@@ -190,6 +240,12 @@ public class AccountDao {
         }
     }
 
+    /**
+     * Zmaže účet z databázy podľa jeho ID.
+     *
+     * @param id ID účtu na zmazanie
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public void delete(long id) throws SQLException {
         try (Connection c = Db.get();
              PreparedStatement ps = c.prepareStatement("DELETE FROM accounts WHERE id=?")) {
@@ -198,12 +254,20 @@ public class AccountDao {
         }
     }
 
-    // ========== nové metódy pre admin dashboard ==========
-
     /**
-     * Úprava kompletného účtu (vrátane typu a prečerpania).
-     * typeCode: "STANDARD" alebo "OVERDRAFT"
-     * overdraftLimit a overdraftInterest môžu byť null, ak je typ STANDARD.
+     * Aktualizuje kompletné informácie o účte vrátane typu a parametrov prečerpania.
+     * Typ sa zadáva ako reťazec {@code "STANDARD"} alebo {@code "OVERDRAFT"}.
+     * Pre STANDARD typ môžu byť {@code overdraftLimit} a {@code overdraftInterest} null.
+     *
+     * @param id               ID účtu na aktualizáciu
+     * @param ownerName        nové meno majiteľa účtu
+     * @param number           nové číslo účtu
+     * @param balance          nový zostatok
+     * @param interest         nový úrok (% p.a.)
+     * @param typeCode         typ účtu: {@code "STANDARD"} alebo {@code "OVERDRAFT"}
+     * @param overdraftLimit   limit prečerpania (len pre OVERDRAFT, inak null)
+     * @param overdraftInterest úrok z prečerpania v % (len pre OVERDRAFT, inak null)
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
      */
     public void updateAccount(long id,
                               String ownerName,
@@ -233,12 +297,14 @@ public class AccountDao {
             ps.setBigDecimal(4, BigDecimal.valueOf(interest));
             ps.setString(5, typeCode);
 
+            // Nastavenie limitu prečerpania (null pre STANDARD)
             if (overdraftLimit != null) {
                 ps.setBigDecimal(6, BigDecimal.valueOf(overdraftLimit));
             } else {
                 ps.setNull(6, Types.DECIMAL);
             }
 
+            // Nastavenie úroku z prečerpania (null pre STANDARD)
             if (overdraftInterest != null) {
                 ps.setBigDecimal(7, BigDecimal.valueOf(overdraftInterest));
             } else {
@@ -250,7 +316,16 @@ public class AccountDao {
         }
     }
 
-    /** Vytvorenie bežného (STANDARD) účtu pre daného používateľa. */
+    /**
+     * Vytvorí nový bežný (STANDARD) bankový účet pre daného používateľa.
+     *
+     * @param userId    ID vlastníka účtu
+     * @param ownerName meno majiteľa účtu (zobrazované)
+     * @param number    číslo nového účtu
+     * @param balance   počiatočný zostatok
+     * @param interest  úrok v % p.a.
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public void createStandard(int userId,
                                String ownerName,
                                long number,
@@ -274,7 +349,19 @@ public class AccountDao {
         }
     }
 
-    /** Vytvorenie OVERDRAFT účtu pre daného používateľa. */
+    /**
+     * Vytvorí nový OVERDRAFT bankový účet pre daného používateľa.
+     * OVERDRAFT účet umožňuje ísť do záporného zostatku do výšky limitu prečerpania.
+     *
+     * @param userId           ID vlastníka účtu
+     * @param ownerName        meno majiteľa účtu
+     * @param number           číslo nového účtu
+     * @param balance          počiatočný zostatok
+     * @param interest         úrok v % p.a. (pre kladný zostatok)
+     * @param overdraftLimit   maximálna suma, do ktorej môže zostatok klesnúť pod nulu
+     * @param overdraftInterest úrok z prečerpania v % p.a. (účtovaný keď je zostatok záporný)
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public void createOverdraft(int userId,
                                 String ownerName,
                                 long number,

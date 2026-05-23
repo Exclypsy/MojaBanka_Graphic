@@ -8,18 +8,26 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO (Data Access Object) trieda pre operácie s transakciami (tabuľka {@code transactions}).
+ * Poskytuje metódy na zaznamenávanie (logovanie) bankových operácií
+ * a načítavanie histórie transakcií pre používateľov aj admina.
+ */
 public class TransactionDao {
 
     /**
-     * Log jednej transakcie (vklad, výber, úrok, prevod).
+     * Zaloguje jednu bankovú transakciu do databázy.
+     * Používa sa po každej operácii: vklad, výber, úrok alebo prevod.
      *
-     * @param userId             ID používateľa, ktorý akciu spravil (môže byť null – napr. systémový úrok)
+     * @param userId             ID používateľa, ktorý operáciu vykonal (môže byť null – systémový úrok)
      * @param accountId          ID účtu, ktorého sa operácia týka
-     * @param operationType      DEPOSIT / WITHDRAW / TRANSFER_DEBIT / TRANSFER_CREDIT / INTEREST
-     * @param amount             suma operácie (kladná)
-     * @param balanceAfter       zostatok na účte po operácii
-     * @param relatedAccountId   ID druhého účtu pri prevode (môže byť null)
-     * @param description        textový popis
+     * @param operationType      typ operácie: {@code DEPOSIT}, {@code WITHDRAW},
+     *                           {@code TRANSFER_DEBIT}, {@code TRANSFER_CREDIT}, {@code INTEREST}
+     * @param amount             suma operácie (vždy kladná)
+     * @param balanceAfter       zostatok na účte po vykonaní operácie
+     * @param relatedAccountId   ID druhého účtu pri prevode (null ak sa prevod netýka dvoch účtov)
+     * @param description        textový popis transakcie
+     * @throws Exception ak nastane chyba pri prístupe k databáze
      */
     public void logTransaction(
             Integer userId,
@@ -41,6 +49,7 @@ public class TransactionDao {
         try (Connection c = Db.get();
              PreparedStatement ps = c.prepareStatement(sql)) {
 
+            // userId môže byť null (napr. systémový záznam)
             if (userId != null) {
                 ps.setInt(1, userId);
             } else {
@@ -52,6 +61,7 @@ public class TransactionDao {
             ps.setBigDecimal(4, java.math.BigDecimal.valueOf(amount));
             ps.setBigDecimal(5, java.math.BigDecimal.valueOf(balanceAfter));
 
+            // relatedAccountId je null pre operácie ktoré sa netýkajú dvoch účtov
             if (relatedAccountId != null) {
                 ps.setLong(6, relatedAccountId);
             } else {
@@ -64,7 +74,12 @@ public class TransactionDao {
     }
 
     /**
-     * Všetky transakcie pre admina (vidí všetko).
+     * Načíta všetky transakcie v systéme pre pohľad admina.
+     * Obsahuje informácie o používateľovi, účte, type operácie, sume a popis.
+     * Zoradené od najnovšej transakcie.
+     *
+     * @return zoznam všetkých transakcií ako {@link TransactionView} objekty
+     * @throws Exception ak nastane chyba pri prístupe k databáze
      */
     public List<TransactionView> findAllForAdmin() throws Exception {
         String sql = """
@@ -99,6 +114,7 @@ public class TransactionDao {
                 double amount = rs.getDouble("amount");
                 double balAfter = rs.getDouble("balance_after");
 
+                // Číselné číslo druhého účtu – null ak transakcia nemá druhý účet
                 String relatedAcc = null;
                 long relNum = rs.getLong("related_account_number");
                 if (!rs.wasNull()) {
@@ -117,7 +133,13 @@ public class TransactionDao {
     }
 
     /**
-     * Transakcie pre konkrétneho usera – podľa jeho účtov.
+     * Načíta transakcie pre konkrétneho používateľa – zobrazuje len jeho vlastné účty.
+     * Na rozdiel od admin pohľadu neobsahuje stĺpec s username (používateľ sám seba pozná).
+     * Zoradené od najnovšej transakcie.
+     *
+     * @param userId ID používateľa, ktorého transakcie chceme zobraziť
+     * @return zoznam transakcií ako {@link TransactionUserView} objekty
+     * @throws Exception ak nastane chyba pri prístupe k databáze
      */
     public List<TransactionUserView> findForUser(int userId) throws Exception {
         String sql = """
@@ -151,6 +173,7 @@ public class TransactionDao {
                     double amount = rs.getDouble("amount");
                     double balAfter = rs.getDouble("balance_after");
 
+                    // Druhý účet – null ak transakcia nemá druhý účet
                     String relatedAcc = null;
                     long relNum = rs.getLong("related_account_number");
                     if (!rs.wasNull()) {
@@ -170,7 +193,17 @@ public class TransactionDao {
     }
 
     /**
-     * View objekt pre usera (bez username).
+     * Read-only záznamový objekt (record) pre zobrazenie transakcie z pohľadu bežného používateľa.
+     * Neobsahuje meno používateľa (na rozdiel od {@link TransactionView}).
+     *
+     * @param id                   ID transakcie
+     * @param createdAt            dátum a čas vytvorenia transakcie
+     * @param accountNumber        číslo účtu, ktorého sa transakcia týka
+     * @param operationType        typ operácie (DEPOSIT, WITHDRAW, TRANSFER_DEBIT, atď.)
+     * @param amount               suma operácie
+     * @param balanceAfter         zostatok po operácii
+     * @param relatedAccountNumber číslo druhého účtu pri prevode (alebo null)
+     * @param description          popis transakcie
      */
     public record TransactionUserView(
             long id,

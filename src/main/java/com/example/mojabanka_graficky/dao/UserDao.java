@@ -7,9 +7,23 @@ import java.util.Optional;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO (Data Access Object) trieda pre operácie s používateľmi (tabuľka {@code users}).
+ * Poskytuje metódy na vyhľadávanie, vytváranie a mazanie používateľov v databáze.
+ *
+ * <p><b>Poznámka:</b> Heslá sú momentálne ukladané ako plain text v stĺpci {@code password_hash}.
+ * V produkcii ich treba nahradiť bezpečným hashom (napr. BCrypt).
+ */
 public class UserDao {
 
-    // Login podľa používateľského mena
+    /**
+     * Vyhľadá používateľa podľa jeho používateľského mena.
+     * Používa sa pri prihlasovaní cez GUI (AuthService).
+     *
+     * @param username hľadané používateľské meno
+     * @return {@link Optional} s nájdeným používateľom, alebo prázdny Optional ak neexistuje
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public Optional<User> findByUsername(String username) throws SQLException {
         String sql = "SELECT id, username, password_hash, role, full_name FROM users WHERE username = ?";
         try (Connection c = Db.get();
@@ -26,8 +40,17 @@ public class UserDao {
         }
     }
 
-    // Login podľa username + hesla (pre konzolu)
-    // POZOR: používa sa password_hash ako obyčajný text, rovnako ako v create()
+    /**
+     * Vyhľadá používateľa podľa username a hesla.
+     * Používa sa pri konzolom prihlasovaní.
+     *
+     * <p><b>POZOR:</b> Heslo sa porovnáva priamo s hodnotou v {@code password_hash} – plain text!
+     *
+     * @param username   hľadané používateľské meno
+     * @param rawPassword heslo v nezašifrovanej forme
+     * @return nájdený {@link User}, alebo null ak neexistuje zhoda
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public User findByUsernameAndPassword(String username, String rawPassword) throws SQLException {
         String sql = "SELECT id, username, password_hash, role, full_name " +
                 "FROM users WHERE username = ? AND password_hash = ?";
@@ -46,6 +69,13 @@ public class UserDao {
         }
     }
 
+    /**
+     * Zmaže používateľa z databázy podľa jeho ID.
+     * Pred zmazaním treba odstrániť všetky jeho účty (kvôli cudzím kľúčom).
+     *
+     * @param id ID používateľa na zmazanie
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public void delete(int id) throws SQLException {
         try (Connection c = Db.get();
              PreparedStatement ps = c.prepareStatement(
@@ -55,7 +85,12 @@ public class UserDao {
         }
     }
 
-    // Zoznam všetkých používateľov
+    /**
+     * Vráti zoznam všetkých používateľov v databáze.
+     *
+     * @return zoznam všetkých {@link User} objektov
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public List<User> findAll() throws SQLException {
         String sql = "SELECT id, username, password_hash, role, full_name FROM users";
         try (Connection c = Db.get();
@@ -70,7 +105,18 @@ public class UserDao {
         }
     }
 
-    // Pridanie nového používateľa (bez potreby ID)
+    /**
+     * Pridá nového používateľa do databázy (bez vrátenia ID).
+     * Vhodné ak ID nového záznamu nepotrebujeme.
+     *
+     * <p><b>Poznámka:</b> V praxi použi BCrypt hash namiesto plain textu!
+     *
+     * @param username    používateľské meno
+     * @param rawPassword heslo v plain texte (ulož ako hash v produkcii)
+     * @param role        rola – "USER" alebo "ADMIN"
+     * @param fullName    celé meno používateľa
+     * @throws SQLException ak nastane chyba pri prístupe k databáze
+     */
     public void create(String username, String rawPassword, String role, String fullName) throws SQLException {
         String sql = "INSERT INTO users (username, password_hash, role, full_name) VALUES (?, ?, ?, ?)";
         try (Connection c = Db.get();
@@ -84,7 +130,19 @@ public class UserDao {
         }
     }
 
-    // Pridanie nového používateľa a vrátenie jeho ID (na vytvorenie účtu)
+    /**
+     * Pridá nového používateľa a vráti jeho automaticky vygenerované ID.
+     * Používa sa keď po vytvorení používateľa chceme hneď vytvoriť aj jeho účet.
+     *
+     * <p><b>Poznámka:</b> V praxi použi BCrypt hash namiesto plain textu!
+     *
+     * @param username    používateľské meno
+     * @param rawPassword heslo v plain texte
+     * @param role        rola – "USER" alebo "ADMIN"
+     * @param fullName    celé meno používateľa
+     * @return ID nového používateľa z databázy
+     * @throws SQLException ak nastane chyba alebo sa nepodarí získať ID
+     */
     public int createAndReturnId(String username, String rawPassword, String role, String fullName) throws SQLException {
         String sql = "INSERT INTO users (username, password_hash, role, full_name) VALUES (?, ?, ?, ?)";
         try (Connection c = Db.get();
@@ -96,6 +154,7 @@ public class UserDao {
             ps.setString(4, fullName);
             ps.executeUpdate();
 
+            // Získanie automaticky vygenerovaného ID nového záznamu
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     return keys.getInt(1);
@@ -106,7 +165,13 @@ public class UserDao {
         }
     }
 
-    // Pomocná metóda na mapovanie riadku ResultSet -> User
+    /**
+     * Pomocná metóda – namapuje jeden riadok ResultSet na objekt {@link User}.
+     *
+     * @param rs ResultSet nastavený na aktuálny riadok
+     * @return nový objekt User s hodnotami z DB
+     * @throws SQLException ak nastane chyba pri čítaní z ResultSet
+     */
     private User mapRow(ResultSet rs) throws SQLException {
         return new User(
                 rs.getInt("id"),
